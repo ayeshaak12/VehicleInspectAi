@@ -32,24 +32,7 @@ The AI model can identify damage to the following vehicle components:
 
 ## 🚀 Live Demo
 
-Check out the live application: [Vehicle Inspection AI](https://your-app-name.onrender.com)
-
-## 📸 Screenshots
-
-### Home Page
-![Home Page](screenshots/home.png)
-
-### Inspection Mode Selection
-![Mode Selection](screenshots/mode-selection.png)
-
-### Upload & Analysis
-![Upload Mode](screenshots/upload.png)
-
-### Live Camera Detection
-![Live Detection](screenshots/live-camera.png)
-
-### Results & Report
-![Results](screenshots/results.png)
+Check out the live application: [Vehicle Inspection AI](https://vehicleinspectai.onrender.com)
 
 ## 🛠️ Technology Stack
 

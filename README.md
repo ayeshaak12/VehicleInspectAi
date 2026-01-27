@@ -5,7 +5,6 @@ An advanced AI-powered vehicle damage detection system using computer vision and
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-green)
 ![OpenCV](https://img.shields.io/badge/OpenCV-4.9.0-red)
-![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ## 🌟 Features
 

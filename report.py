@@ -37,23 +37,8 @@ REMARKS = {
 }
 
 def generate_report(defects: list, image_paths: list, output_path: str, vehicle_info: dict = None):
-    """
-    Generate PDF report with vehicle inspection results.
-    
-    Args:
-        defects: List of (component, confidence) tuples
-        image_paths: List of absolute paths to annotated images
-        output_path: Path where PDF should be saved
-        vehicle_info: Dictionary with keys: vin, make, model, year, mileage
-    """
     if vehicle_info is None:
-        vehicle_info = {
-            "vin": "Not Provided",
-            "make": "Not Provided",
-            "model": "Not Provided",
-            "year": "Not Provided",
-            "mileage": "Not Provided"
-        }
+        vehicle_info = {}
     
     doc = SimpleDocTemplate(
         output_path,
@@ -79,14 +64,18 @@ def generate_report(defects: list, image_paths: list, output_path: str, vehicle_
     story.append(Paragraph(f"Inspection Date: {datetime.now().strftime('%B %d, %Y')}", styles["Normal"]))
     story.append(Spacer(1, 20))
 
-    # Vehicle Info Table - now with actual data
-    make_model = f"{vehicle_info['make']} {vehicle_info['model']}".strip()
-    if make_model == "Not Provided Not Provided":
-        make_model = "Not Provided"
+    # Vehicle Info Table
+    vin = vehicle_info.get("vin", "Not Provided")
+    make = vehicle_info.get("make", "Not Provided")
+    model = vehicle_info.get("model", "Not Provided")
+    year = vehicle_info.get("year", "Not Provided")
+    mileage = vehicle_info.get("mileage", "Not Provided")
+    
+    make_model = f"{make} {model}" if make != "Not Provided" else "Not Provided"
     
     info_data = [
-        ["VIN / Registration", vehicle_info["vin"], "Mileage", vehicle_info["mileage"]],
-        ["Make / Model", make_model, "Year", vehicle_info["year"]]
+        ["VIN / Registration", vin, "Mileage", mileage],
+        ["Make / Model", make_model, "Year", year]
     ]
     info_table = Table(info_data, colWidths=[5*cm, 5*cm, 4*cm, 4*cm])
     info_table.setStyle(TableStyle([
@@ -102,30 +91,7 @@ def generate_report(defects: list, image_paths: list, output_path: str, vehicle_
     story.append(info_table)
     story.append(Spacer(1, 30))
 
-    # Annotated Images Section
-    story.append(Paragraph("<b>Vehicle Images with AI-Detected Damage</b>", styles["Heading2"]))
-    story.append(Spacer(1, 12))
-    story.append(Paragraph("Damage areas are highlighted with red bounding boxes and confidence labels.", styles["Italic"]))
-    story.append(Spacer(1, 20))
-
-    if not image_paths:
-        story.append(Paragraph("<i>No images were processed.</i>", styles["Normal"]))
-    else:
-        for idx, img_path in enumerate(image_paths):
-            view_labels = ["Front View", "Side View", "Rear View", "Additional View"]
-            view_name = view_labels[idx] if idx < len(view_labels) else f"View {idx + 1}"
-            story.append(Paragraph(f"<b>{view_name}</b>", styles["Heading3"]))
-            story.append(Spacer(1, 8))
-
-            img = Image(img_path, width=17*cm, height=10.5*cm)
-            img.hAlign = 'CENTER'
-            story.append(img)
-            story.append(Spacer(1, 30))
-
-            if idx < len(image_paths) - 1:
-                story.append(PageBreak())
-
-    # Damage Checklist Section
+    # Damage Checklist Section - First
     story.append(Paragraph("<b>Damage Inspection Checklist</b>", styles["Heading2"]))
     story.append(Spacer(1, 10))
 
@@ -168,7 +134,7 @@ def generate_report(defects: list, image_paths: list, output_path: str, vehicle_
         status_color = "#991b1b"
         remark_category = "FAIL"
 
-    # Summary row
+    # Summary row – clean, separate cells
     table_data.append([
         Paragraph("<b>Total Unique Defects</b>", styles["Normal"]),
         Paragraph(f"<font color='{status_color}'><b>{total_detected_types}</b></font>", styles["Normal"]),
@@ -176,6 +142,7 @@ def generate_report(defects: list, image_paths: list, output_path: str, vehicle_
         Paragraph(f"<font color='{status_color}' size=14><b>{overall_status}</b></font>", styles["Normal"])
     ])
 
+    # PERFECT COLUMN WIDTHS – no overlap guaranteed
     defect_table = Table(table_data, colWidths=[5.5*cm, 3.8*cm, 4.0*cm, 5.2*cm])
 
     defect_table.setStyle(TableStyle([
@@ -194,12 +161,51 @@ def generate_report(defects: list, image_paths: list, output_path: str, vehicle_
         ('BOTTOMPADDING', (0,0), (-1,-1), 8),
         ('TOPPADDING', (0,0), (-1,-1), 8),
 
-        # Center the confidence column
+        # Center the confidence column for better look
         ('ALIGN', (2,1), (2,-1), 'CENTER'),
     ]))
 
     story.append(defect_table)
     story.append(Spacer(1, 30))
+
+    # Annotated Images Section - After table
+    if defects and len(defects) > 0:
+        story.append(Paragraph("<b>Defects Identified</b>", styles["Heading2"]))
+        story.append(Spacer(1, 12))
+        
+        # Create a grid layout for images on one page
+        image_grid_data = []
+        row = []
+        
+        for idx, img_path in enumerate(image_paths):
+            try:
+                img = Image(img_path, width=8*cm, height=5*cm)
+                row.append(img)
+                
+                if len(row) == 2:  # 2 images per row
+                    image_grid_data.append(row)
+                    row = []
+            except Exception as e:
+                print(f"Error loading image {idx}: {str(e)}")
+        
+        # Add remaining images in last row
+        if row:
+            image_grid_data.append(row)
+        
+        # Create table for grid layout
+        if image_grid_data:
+            image_table = Table(image_grid_data, colWidths=[8.5*cm, 8.5*cm])
+            image_table.setStyle(TableStyle([
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 5),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+                ('TOPPADDING', (0, 0), (-1, -1), 5),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+            ]))
+            story.append(image_table)
+        
+        story.append(Spacer(1, 30))
 
     # Summary & Recommendations
     remark_text = random.choice(REMARKS[remark_category])
@@ -232,4 +238,7 @@ def generate_report(defects: list, image_paths: list, output_path: str, vehicle_
         disclaimer_style
     ))
 
-    doc.build(story)
+    try:
+        doc.build(story)
+    except Exception as e:
+        raise Exception(f"Failed to build PDF: {str(e)}")

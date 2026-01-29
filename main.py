@@ -1,4 +1,3 @@
-import os
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -45,8 +44,10 @@ CLASS_MAPPING = {
     "windshield": "Windshield"
 }
 
+# Global state for live detection captures
 captured_frames = []
 captured_defect_types = set()
+captured_all_defects = []  # NEW: Store all defects with confidence for report generation
 
 
 def detect_damage(image_path: str):
@@ -73,7 +74,11 @@ def detect_damage(image_path: str):
 
 @app.post("/detect-live")
 async def detect_live(file: UploadFile = File(...)):
-    global captured_frames, captured_defect_types
+    """
+    Live detection endpoint - analyzes a single frame from iVCam,
+    returns detected defects, and auto-captures if new defect found.
+    """
+    global captured_frames, captured_defect_types, captured_all_defects
     
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
@@ -146,11 +151,19 @@ async def detect_live(file: UploadFile = File(...)):
                 2
             )
         
+        # NEW: If new defect found, capture this frame AND store defects
         if new_defect_found and len(predictions) > 0:
             capture_filename = f"capture_{len(captured_frames)}.jpg"
             capture_path = os.path.join(STATIC_DIR, capture_filename)
             cv2.imwrite(capture_path, annotated_frame)
             captured_frames.append(capture_path)
+            
+            # NEW: Store the defects for this frame
+            for pred in predictions:
+                class_name = pred["class"].lower().strip()
+                display_name = CLASS_MAPPING.get(class_name, class_name.capitalize())
+                confidence = round(pred["confidence"] * 100, 1)
+                captured_all_defects.append((display_name, confidence))
         
         _, buffer = cv2.imencode('.jpg', annotated_frame)
         frame_base64 = base64.b64encode(buffer).decode('utf-8')
@@ -180,25 +193,17 @@ async def finalize_live_detection(
     year: Optional[str] = Form(None),
     mileage: Optional[str] = Form(None)
 ):
-    global captured_frames, captured_defect_types
+    """
+    Generate report from captured frames during live detection.
+    """
+    global captured_frames, captured_defect_types, captured_all_defects
     
     if len(captured_frames) == 0:
         raise HTTPException(status_code=400, detail="No frames captured during live detection")
     
-    all_defects = []
-    
-    for frame_path in captured_frames:
-        try:
-            result = detect_damage(frame_path)
-            predictions = result.get("predictions", [])
-            
-            for pred in predictions:
-                class_name = pred["class"].lower().strip()
-                display_name = CLASS_MAPPING.get(class_name, class_name.capitalize())
-                confidence = round(pred["confidence"] * 100, 1)
-                all_defects.append((display_name, confidence))
-        except Exception as e:
-            print(f"Error processing frame {frame_path}: {e}")
+    # NEW: Use the defects that were already collected during live detection
+    # This prevents re-running inference on already processed frames
+    all_defects = captured_all_defects.copy()
     
     vehicle_info = {
         "vin": vin or "Not Provided",
@@ -216,8 +221,10 @@ async def finalize_live_detection(
     unique_defect_types = len(captured_defect_types)
     annotated_image_paths = [f"static/{os.path.basename(p)}" for p in captured_frames]
     
+    # Reset global state
     captured_frames = []
     captured_defect_types = set()
+    captured_all_defects = []  # NEW: Reset stored defects
     
     return {
         "message": "Live detection report generated",
@@ -231,7 +238,8 @@ async def finalize_live_detection(
 
 @app.post("/reset-live-detection")
 async def reset_live_detection():
-    global captured_frames, captured_defect_types
+    """Reset live detection state."""
+    global captured_frames, captured_defect_types, captured_all_defects
     
     for frame_path in captured_frames:
         if os.path.exists(frame_path):
@@ -242,6 +250,7 @@ async def reset_live_detection():
     
     captured_frames = []
     captured_defect_types = set()
+    captured_all_defects = []  # NEW: Reset stored defects
     
     return {"message": "Live detection reset"}
 
@@ -255,6 +264,9 @@ async def inspect_vehicle(
     year: Optional[str] = Form(None),
     mileage: Optional[str] = Form(None)
 ):
+    """
+    Full inspection endpoint - processes uploaded images, creates annotations, and generates report.
+    """
     if not files or len(files) == 0:
         raise HTTPException(status_code=400, detail="At least one image file is required")
 
@@ -328,12 +340,14 @@ async def inspect_vehicle(
                 2
             )
 
-        annotated_filename = f"annotated_{idx}.jpg"
-        annotated_abs_path = os.path.join(STATIC_DIR, annotated_filename)
-        cv2.imwrite(annotated_abs_path, image)
+        # NEW: Only save annotated image if defects were detected
+        if len(predictions) > 0:
+            annotated_filename = f"annotated_{idx}.jpg"
+            annotated_abs_path = os.path.join(STATIC_DIR, annotated_filename)
+            cv2.imwrite(annotated_abs_path, image)
 
-        annotated_image_paths.append(f"static/{annotated_filename}")
-        saved_annotated_paths.append(annotated_abs_path)
+            annotated_image_paths.append(f"static/{annotated_filename}")
+            saved_annotated_paths.append(annotated_abs_path)
 
         if os.path.exists(input_path):
             os.remove(input_path)
@@ -379,10 +393,19 @@ def get_report():
     )
 
 
-# Mount static files and serve index.html
-app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
+# Root endpoint - serves index.html
 @app.get("/")
 async def read_root():
     return FileResponse("index.html")
+
+
+# Mount static directories
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+
+# For running with uvicorn programmatically (used by Render)
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)

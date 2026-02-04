@@ -665,11 +665,198 @@
       font-weight: 500;
       opacity: 0.9;
     }
+
+    /* ────────────────────────────────────────────────
+       LOGIN PAGE STYLES
+    ───────────────────────────────────────────────── */
+    .login-container {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .login-container.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .login-box {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      padding: 60px 50px;
+      border-radius: 24px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      animation: loginSlideIn 0.6s ease-out;
+    }
+
+    @keyframes loginSlideIn {
+      from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .login-logo img {
+      width: 80px;
+      height: auto;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 8px 20px rgba(255,255,255,0.2));
+    }
+
+    .login-logo h2 {
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .login-logo p {
+      color: #999999;
+      font-size: 14px;
+    }
+
+    .login-form {
+      margin-top: 30px;
+    }
+
+    .login-field {
+      margin-bottom: 25px;
+    }
+
+    .login-field label {
+      display: block;
+      margin-bottom: 10px;
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .login-field input {
+      width: 100%;
+      padding: 16px 20px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.4);
+      color: #ffffff;
+      font-size: 15px;
+      transition: all 0.3s;
+    }
+
+    .login-field input:focus {
+      outline: none;
+      border-color: #ffffff;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+    }
+
+    .login-error {
+      background: rgba(255, 100, 100, 0.1);
+      border: 2px solid rgba(255, 100, 100, 0.3);
+      color: #ffaaaa;
+      padding: 12px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .login-error.show {
+      display: block;
+      animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+      color: #000000;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(255, 255, 255, 0.3);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .logout-btn {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
   </style>
 </head>
 <body>
+  <!-- LOGIN SCREEN -->
+  <div id="loginContainer" class="login-container">
+    <div class="login-box">
+      <div class="login-logo">
+        <img src="/static/startuplogo.png" alt="VehicleAI Logo">
+        <h2>VehicleAI</h2>
+        <p>AI-Powered Vehicle Inspection</p>
+      </div>
+      
+      <div id="loginError" class="login-error">
+        Invalid username or password
+      </div>
+      
+      <form class="login-form" onsubmit="handleLogin(event)">
+        <div class="login-field">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" required autocomplete="username">
+        </div>
+        
+        <div class="login-field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required autocomplete="current-password">
+        </div>
+        
+        <button type="submit" class="login-btn">Sign In</button>
+      </form>
+    </div>
+  </div>
+
   <!-- SPLASH / LANDING SCREEN -->
-  <div id="splash" class="splash">
+  <div id="splash" class="splash hidden">
     <div class="splash-content">
       <img src="/static/startuplogo.png" alt="VehicleAI Car Logo" class="splash-logo">
       <h1 class="splash-title">VehicleAI</h1>
@@ -689,6 +876,7 @@
         <a class="nav-link" onclick="showPage('inspection')">New Inspection</a>
         <a class="nav-link" onclick="showPage('history')">History<span class="badge" id="historyBadge" style="display: none; background: rgba(255, 255, 255, 0.2); color: #ffffff; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; margin-left: 8px;">0</span></a>
         <a class="nav-link" onclick="showPage('about')">About</a>
+        <button class="logout-btn" onclick="handleLogout()">Logout</button>
       </div>
     </div>
   </nav>
@@ -986,37 +1174,126 @@
   </div>
 
   <script>
-    // ── Splash screen control (Single, Clean Implementation) ───────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════════════════
+    // LOGIN AUTHENTICATION SYSTEM
+    // ══════════════════════════════════════════════════════════════════════════════
+    
+    // Hardcoded credentials (stored securely in JavaScript - not visible in HTML)
+    const AUTH_CREDENTIALS = {
+      username: 'admin',
+      password: 'vehicleai2025'
+    };
+
+    // Check if user is already logged in
+    function checkAuth() {
+      const isLoggedIn = sessionStorage.getItem('vehicleai_authenticated') === 'true';
+      
+      if (isLoggedIn) {
+        document.getElementById('loginContainer').classList.add('hidden');
+        document.body.classList.remove('splash-active');
+      } else {
+        document.getElementById('loginContainer').classList.remove('hidden');
+        document.body.classList.add('splash-active');
+      }
+      
+      return isLoggedIn;
+    }
+
+    // Handle login form submission
+    function handleLogin(event) {
+      event.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const errorDiv = document.getElementById('loginError');
+      
+      // Validate credentials
+      if (username === AUTH_CREDENTIALS.username && password === AUTH_CREDENTIALS.password) {
+        // Successful login
+        sessionStorage.setItem('vehicleai_authenticated', 'true');
+        
+        // Hide login screen
+        document.getElementById('loginContainer').classList.add('hidden');
+        document.body.classList.remove('splash-active');
+        
+        // Show splash screen briefly
+        const splash = document.getElementById('splash');
+        splash.classList.remove('hidden');
+        
+        setTimeout(() => {
+          splash.classList.add('hidden');
+          document.getElementById('home').classList.add('active');
+        }, 3200);
+        
+        // Clear form
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        errorDiv.classList.remove('show');
+      } else {
+        // Failed login
+        errorDiv.classList.add('show');
+        document.getElementById('password').value = '';
+        
+        // Hide error after 3 seconds
+        setTimeout(() => {
+          errorDiv.classList.remove('show');
+        }, 3000);
+      }
+    }
+
+    // Handle logout
+    function handleLogout() {
+      if (confirm('Are you sure you want to logout?')) {
+        sessionStorage.removeItem('vehicleai_authenticated');
+        
+        // Hide all pages
+        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+        document.body.classList.add('splash-active');
+        
+        // Show login screen
+        document.getElementById('loginContainer').classList.remove('hidden');
+        
+        // Reset inspection data if needed
+        resetInspection();
+      }
+    }
+
+    // Check authentication on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      checkAuth();
+      loadHistory();
+      updateHomeStats();
+    });
+
+    // ── Splash screen control ───────────────────────────────────────
     (function() {
-      // Add splash-active class immediately to hide content
       document.documentElement.classList.add('splash-active');
       document.body.classList.add('splash-active');
 
-      // Show splash on page load
       window.addEventListener('load', () => {
-        // Keep splash visible for 3.2 seconds, then fade out
-        setTimeout(() => {
-          const splash = document.getElementById('splash');
-          if (splash) {
-            splash.classList.add('hidden');
-          }
-          document.body.classList.remove('splash-active');
-          document.documentElement.classList.remove('splash-active');
+        // Only show splash if authenticated
+        if (checkAuth()) {
+          setTimeout(() => {
+            const splash = document.getElementById('splash');
+            if (splash) {
+              splash.classList.add('hidden');
+            }
+            document.body.classList.remove('splash-active');
+            document.documentElement.classList.remove('splash-active');
 
-          // Ensure home page is visible
-          const home = document.getElementById('home');
-          if (home) {
-            home.classList.add('active');
-          }
+            const home = document.getElementById('home');
+            if (home) {
+              home.classList.add('active');
+            }
 
-          window.scrollTo({ top: 0, behavior: 'instant' });
-        }, 3200);
+            window.scrollTo({ top: 0, behavior: 'instant' });
+          }, 3200);
+        }
       });
 
-      // Fallback if load event doesn't fire
       setTimeout(() => {
         const splash = document.getElementById('splash');
-        if (splash && !splash.classList.contains('hidden')) {
+        if (splash && !splash.classList.contains('hidden') && checkAuth()) {
           splash.classList.add('hidden');
           document.body.classList.remove('splash-active');
           document.documentElement.classList.remove('splash-active');
@@ -1046,6 +1323,11 @@
 
     // ========== PAGE NAVIGATION ==========
     function showPage(pageId) {
+      // Check if authenticated before allowing navigation
+      if (!checkAuth()) {
+        return;
+      }
+      
       document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
       document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
       

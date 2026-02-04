@@ -398,6 +398,10 @@ def get_report():
 async def read_root():
     return FileResponse("index.html")
 
+# NEW: Serve app.js file
+@app.get("/app.js")
+async def get_app_js():
+    return FileResponse("app.js", media_type="application/javascript")
 
 # Mount static directories
 app.mount("/static", StaticFiles(directory="static"), name="static")

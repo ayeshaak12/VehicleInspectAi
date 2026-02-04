@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AI Vehicle Inspection</title>
+  <title>AutoSpect - AI Vehicle Inspection</title>
   <link rel="manifest" href="/manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -830,8 +830,8 @@
   <div id="loginContainer" class="login-container">
     <div class="login-box">
       <div class="login-logo">
-        <img src="/static/startuplogo.png" alt="VehicleAI Logo">
-        <h2>VehicleAI</h2>
+        <img src="/static/startuplogo.png" alt="AutoSpect Logo">
+        <h2>AutoSpect</h2>
         <p>AI-Powered Vehicle Inspection</p>
       </div>
       
@@ -858,8 +858,8 @@
   <!-- SPLASH / LANDING SCREEN -->
   <div id="splash" class="splash hidden">
     <div class="splash-content">
-      <img src="/static/startuplogo.png" alt="VehicleAI Car Logo" class="splash-logo">
-      <h1 class="splash-title">VehicleAI</h1>
+      <img src="/static/startuplogo.png" alt="AutoSpect Car Logo" class="splash-logo">
+      <h1 class="splash-title">AutoSpect</h1>
       <p class="splash-subtitle">AI-Powered Vehicle Inspection</p>
     </div>
   </div>
@@ -869,7 +869,7 @@
     <div class="nav-container">
       <div class="logo" onclick="showPage('home')">
         <img src="/static/newcarlogo.png" alt="Car Logo"/>
-        <span>VehicleAI</span>
+        <span>AutoSpect</span>
       </div>
       <div class="nav-links">
         <a class="nav-link active" onclick="showPage('home')">Home</a>
@@ -1095,13 +1095,13 @@
   <div id="about" class="page">
     <div class="container">
       <div class="inspection-header">
-        <h2>About VehicleAI</h2>
+        <h2>About AutoSpect</h2>
         <p>Learn more about our AI-powered inspection system</p>
       </div>
 
       <div class="about-section">
         <h3>🎯 Our Mission</h3>
-        <p>VehicleAI revolutionizes vehicle inspections by combining cutting-edge artificial intelligence with computer vision technology. Our platform provides instant, accurate damage detection, saving time and money for vehicle owners, insurance companies, and dealerships.</p>
+        <p>AutoSpect revolutionizes vehicle inspections by combining cutting-edge artificial intelligence with computer vision technology. Our platform provides instant, accurate damage detection, saving time and money for vehicle owners, insurance companies, and dealerships.</p>
       </div>
 
       <div class="about-section">
@@ -1181,12 +1181,12 @@
     // Hardcoded credentials (stored securely in JavaScript - not visible in HTML)
     const AUTH_CREDENTIALS = {
       username: 'admin',
-      password: 'vehicleai2025'
+      password: 'autospect2025'
     };
 
     // Check if user is already logged in
     function checkAuth() {
-      const isLoggedIn = sessionStorage.getItem('vehicleai_authenticated') === 'true';
+      const isLoggedIn = sessionStorage.getItem('autospect_authenticated') === 'true';
       
       if (isLoggedIn) {
         document.getElementById('loginContainer').classList.add('hidden');
@@ -1210,7 +1210,7 @@
       // Validate credentials
       if (username === AUTH_CREDENTIALS.username && password === AUTH_CREDENTIALS.password) {
         // Successful login
-        sessionStorage.setItem('vehicleai_authenticated', 'true');
+        sessionStorage.setItem('autospect_authenticated', 'true');
         
         // Hide login screen
         document.getElementById('loginContainer').classList.add('hidden');
@@ -1244,7 +1244,7 @@
     // Handle logout
     function handleLogout() {
       if (confirm('Are you sure you want to logout?')) {
-        sessionStorage.removeItem('vehicleai_authenticated');
+        sessionStorage.removeItem('autospect_authenticated');
         
         // Hide all pages
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
@@ -1643,7 +1643,7 @@
     function downloadReport() {
       const link = document.createElement('a');
       link.href = `/report?t=${new Date().getTime()}`;
-      link.download = 'AI_Vehicle_Inspection_Report.pdf';
+      link.download = 'AutoSpect_Vehicle_Inspection_Report.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

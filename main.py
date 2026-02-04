@@ -10,7 +10,7 @@ import base64
 from typing import List, Optional
 from report import generate_report
 
-app = FastAPI(title="AI Vehicle Inspection API")
+app = FastAPI(title="AutoSpect - AI Vehicle Inspection API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -383,13 +383,13 @@ def get_report():
         raise HTTPException(status_code=404, detail="Report not generated yet. Please inspect a vehicle first.")
 
     headers = {
-        "Content-Disposition": "inline; filename=AI_Vehicle_Inspection_Report.pdf"
+        "Content-Disposition": "inline; filename=AutoSpect_Vehicle_Inspection_Report.pdf"
     }
     return FileResponse(
         REPORT_PATH,
         media_type="application/pdf",
         headers=headers,
-        filename="AI_Vehicle_Inspection_Report.pdf"
+        filename="AutoSpect_Vehicle_Inspection_Report.pdf"
     )
 
 
